@@ -1,3 +1,3 @@
-# 2024.02.23
+# 2024.02.27
 
-- Features: Implements Dean article
+- Features: Implements Bernabeu article

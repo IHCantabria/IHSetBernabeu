@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 
 [project]
-name = "IHSetDean"
+name = "IHSetBernabeu"
 authors = [{ name = "Lim, Changbin", email = "changbin.lim@unican.es" }]
 maintainers = [{ name = "Lim, Changbin", email = "changbin.lim@unican.es" }]
 readme = "README.md"
@@ -23,7 +23,7 @@ classifiers = [
 ]
 dynamic = ["version", "description"]
 
-dependencies = ["numpy", "pytest >=7", "scipy"]
+dependencies = ["numpy", "pytest >=7", "scipy", "shapely"]
 
 
 [project.optional-dependencies]
@@ -31,13 +31,13 @@ dev = ["flit", "black", "sphinx", "myst-nb", "sphinx_rtd_theme", "pre-commit"]
 
 
 [project.urls]
-documentation = "https://ihcantabria.github.io/IHSetDean/"
-repository = "https://github.com/IHCantabria/IHSetDean"
-changelog = "https://github.com/IHCantabria/IHSetDean/blob/main/CHANGELOG.md"
+documentation = "https://ihcantabria.github.io/IHSetBernabeu/"
+repository = "https://github.com/IHCantabria/IHSetBernabeu"
+changelog = "https://github.com/IHCantabria/IHSetBernabeu/blob/main/CHANGELOG.md"
 
 
 [project.scripts]
-ihsetdean-tests = "IHSetDean.tests.__init__:run_tests"
+ihsetbernabeu-tests = "IHSetBernabeu.tests.__init__:run_tests"
 
 
 [tool.pytest.ini_options]
