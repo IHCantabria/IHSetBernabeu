@@ -16,4 +16,6 @@ font = {'family': 'serif',
 hk = []
 hk.append(plt.plot(self.dp, self.zp, '--k')[0])
 hk.append(plt.plot(self.dp, self.hmi, linewidth=2)[0])
+plt.xlabel('Distance [m]', fontdict=font)
+plt.ylabel('Water depth [m]', fontdict=font)
 plt.show()

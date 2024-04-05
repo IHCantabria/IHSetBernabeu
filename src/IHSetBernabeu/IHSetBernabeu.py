@@ -2,6 +2,7 @@ import numpy as np
 from scipy.interpolate import interp1d
 from shapely.geometry import LineString
 import xarray as xr
+from IHSetUtils import wMOORE
 
 class cal_Bernabeu(object):
     """
@@ -18,9 +19,6 @@ class cal_Bernabeu(object):
         ens = xr.open_dataset(path+'ens.nc')
         wav = xr.open_dataset(path+'wav.nc')
                 
-        # self.Ymin = cfg['Ymin'].values
-        # self.Ymax = cfg['Ymax'].values
-        # self.dY = cfg['dy'].values
         self.D50 = ens['D50'].values
         self.dp = ens['d'].values
         self.zp = ens['z'].values
@@ -40,7 +38,7 @@ class cal_Bernabeu(object):
         zp = zp[1:]
         dp = dp[1:]
         
-        ws = caida_grano(self.D50)
+        ws = wMOORE(self.D50)
         gamma = self.Hs / (ws * self.Tp)
     
         self.Ar = 0.21 - 0.02 * gamma
@@ -57,21 +55,6 @@ class cal_Bernabeu(object):
         self.hr = 1.1 * self.Hs
         
         return self       
-
-def caida_grano(D50):
-    ws = np.nan
-    if D50 < 0.1:
-        ws = 1.1e6 * (D50 * 0.001) ** 2
-    elif 0.1 <= D50 <= 1:
-        ws = 273 * (D50 * 0.001) ** 1.1
-    elif D50 > 1:
-        ws = 4.36 * D50**0.5
-    return ws
-
-
-def RMSEq(Y, Y2t):
-    return np.sqrt(np.mean((Y - Y2t) ** 2, axis=0))
-
 
 def Bernabeu(self):
     Xr = ((self.hr + self.CM) / self.Ar)**(1.5) + self.B / self.Ar**(1.5) * (self.hr + self.CM)**3
@@ -110,6 +93,6 @@ def Bernabeu(self):
 
     self.hmi = interp1d(X, hm, kind='linear', fill_value='extrapolate')(self.dp)  
 
-    err = RMSEq(self.zp, self.hmi)
+    # err = RMSEq(self.zp, self.hmi)
 
-    return self  
+    return self   
