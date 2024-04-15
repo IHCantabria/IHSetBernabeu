@@ -2,7 +2,8 @@ import numpy as np
 from scipy.interpolate import interp1d
 from shapely.geometry import LineString
 import xarray as xr
-from IHSetUtils import wMOORE
+import pandas as pd
+from IHSetUtils import wMOORE, Hs12Calc, depthOfClosure
 
 class cal_Bernabeu(object):
     """
@@ -10,36 +11,44 @@ class cal_Bernabeu(object):
     
     Configuration to calibrate and run the Bernabeu profile.
     
-    This class reads input datasets, performs its calibration.
+    This class reads input datasets, calculates its parameters.
     """
-    def __init__(self, path):
-        self.path = path
-        
-        # cfg = xr.open_dataset(path+'config.nc')
-        ens = xr.open_dataset(path+'ens.nc')
-        wav = xr.open_dataset(path+'wav.nc')
-                
-        self.D50 = ens['D50'].values
-        self.dp = ens['d'].values
-        self.zp = ens['z'].values
-        self.CM = ens['CM_95'].values
-        self.Hs = wav['Hs50'].values
-        self.Tp = wav['Tp50'].values
-                
-    def calibrate(self):
-        self.zp = self.zp - self.zp[0]
-        self.dd = self.dp - self.dp[0]
+    def __init__(self, path_prof, path_wav, Switch_Obs, Switch_Cal_DoC, **kwargs):
+        self.path_prof = path_prof
+        self.path_wav = path_wav
+        prof = pd.read_csv(path_prof)
 
-        # Profile with equidistant points
-        dp = np.linspace(0, self.dp[-1], 500).reshape(-1, 1)
+        self.Hs50 = kwargs['Hs50']
+        self.Tp50 = kwargs['Tp50']
+        self.D50 = kwargs['D50']
+        self.HTL = -kwargs['HTL']    
+        self.LTL = -kwargs['LTL']
+        self.CM = abs(self.HTL - self.LTL)
+        self.xm = np.linspace(kwargs['Xm'][0], kwargs['Xm'][1], 1000).reshape(-1, 1)
         
-        interp_func = interp1d(self.dd, self.zp, kind="linear", fill_value="extrapolate")
-        zp = interp_func(dp)
-        zp = zp[1:]
-        dp = dp[1:]
-        
+        self.Switch_Obs = Switch_Obs              # Do you have profile data? (0: no; 1: yes)
+        if Switch_Obs == 1:
+            self.xp = prof.iloc[:, 0]
+            self.zp = prof.iloc[:, 1]
+            self.zp = abs(self.zp)
+            xp_inx = self.xp[(self.zp >= self.HTL)]
+            self.xp = self.xp - min(xp_inx)
+            
+        self.Switch_Cal_DoC = Switch_Cal_DoC
+        if Switch_Cal_DoC == 1:                   # Calculate Depth of Closure if you have wave data [0: no; 1: yes]
+            wav = xr.open_dataset(path_wav)
+            Hs = wav['Hs'].values
+            Hs = Hs.reshape(-1, 1)
+            Tp = wav['Tp'].values
+            Tp = Tp.reshape(-1, 1)
+            
+            H12,T12 = Hs12Calc(Hs,Tp)
+            self.DoC = depthOfClosure(H12,T12)
+            self.DoC = self.DoC[0]
+                          
+    def params(self):        
         ws = wMOORE(self.D50)
-        gamma = self.Hs / (ws * self.Tp)
+        gamma = self.Hs50 / (ws * self.Tp50)
     
         self.Ar = 0.21 - 0.02 * gamma
         self.B = 0.89 * np.exp(-1.24 * gamma)
@@ -51,8 +60,8 @@ class cal_Bernabeu(object):
         self.c = self.C**(-1.5)
         self.d = self.D / self.C**(1.5)
         
-        self.ha = 3 * self.Hs
-        self.hr = 1.1 * self.Hs
+        self.ha = 3 * self.Hs50
+        self.hr = 1.1 * self.Hs50
         
         return self       
 
@@ -91,8 +100,9 @@ def Bernabeu(self):
     X = np.concatenate([xrot, xaso])
     hm = np.concatenate([hrot, haso])
 
-    self.hmi = interp1d(X, hm, kind='linear', fill_value='extrapolate')(self.dp)  
+    self.zm = -interp1d(X, hm, kind='linear', fill_value='extrapolate')(self.xm) + self.HTL 
+    if self.Switch_Cal_DoC == 1:
+        self.xm_DoC = np.mean(self.xm[(self.zm <= self.DoC + 0.05) & (self.zm >= self.DoC - 0.05)])
+        self.zm_DoC = np.mean(self.zm[(self.zm <= self.DoC + 0.05) & (self.zm >= self.DoC - 0.05)])
 
-    # err = RMSEq(self.zp, self.hmi)
-
-    return self   
+    return self  
