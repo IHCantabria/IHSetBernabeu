@@ -44,7 +44,7 @@ class cal_Bernabeu(object):
             
             H12,T12 = Hs12Calc(Hs,Tp)
             self.DoC = depthOfClosure(H12,T12)
-            self.DoC = self.DoC[0]
+            # self.DoC = self.DoC[0]
                           
     def params(self):        
         ws = wMOORE(self.D50)
