@@ -1,6 +1,6 @@
 # IHSetBernabeu
 
-Dean (1991) have proposed the concept of an equilibrium beach profile. Dean (1991) derived the equilibrium beach profile model with the wave energy dissipation similar to other previous works (e.g., Bruun, 1954). The equilibrium beach profile equation is very simple, but has been used by many researchers for coastal engineering.
+Bernabeu et al. (2003) proposed a two-section equilibrium beach profile model (2S-EBP) based on the concept of the previous studies. This model is useful for predicting the equilibrium beach profile under various conditions.
 
 
 ## Installation and use
