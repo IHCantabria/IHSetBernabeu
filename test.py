@@ -4,13 +4,13 @@ import pandas as pd
 import numpy as np
 
 model = cal_Bernabeu(
-    CM=4.0,
-    Hs50=1.0,
-    hr = 1.5,
-    D50=0.3,
-    Tp50=8.0,
-    doc=10.0,
-    HTL=-4.0
+    HTL=-2.0, # High tide level (vertical displacement)
+    Hs50=1.0, # Mean significant wave height
+    Tp50=8.0, # Average peak wave period
+    D50=0.4, # Median sediment grain size, in millimeters.
+    doc=10.0, # Beach profile - depth of closure
+    CM=2.5, # depth of start of shoaling zone
+    hr=1.5 # profundidade do ponto de inflexão entre surf e shoaling
 )
 
 # 1 - Carrega o perfil “verdadeiro” já existente (sem ruído)
@@ -54,10 +54,10 @@ ax.fill_between(
 )
 
 # 6.2. pinta a areia clara sob o perfil “verdadeiro” (y_true)
-ax.fill_between(
-    x_true, y_true, y_bottom,
-    color=LIGHTSAND, zorder=2
-)
+#ax.fill_between(
+#    x_true, y_true, y_bottom,
+#    color=LIGHTSAND, zorder=2
+#)
 
 # 6.3. pinta a areia escura sob o perfil calibrado (y_cal)
 ax.fill_between(
@@ -74,19 +74,19 @@ ax.plot(
 )
 
 # 6.5. perfil verdadeiro (sem ruído)
-ax.plot(
-    x_true, y_true,
-    '-', linewidth=2,
-    color='black',
-    label='True Profile - CSV', zorder=4
-)
+#ax.plot(
+#    x_true, y_true,
+#    '-', linewidth=2,
+#    color='black',
+#    label='True Profile - CSV', zorder=4
+#)
 
 # 6.6. perfil calibrado (Bernabeu final)
 ax.plot(
     x, y,
     '--', linewidth=2,
     color='red',
-    label='Bernabeu Sintetic Profile', zorder=5
+    label='Bernabeu Profile', zorder=5
 )
 
 # 6.7. formatação final ---
@@ -119,7 +119,6 @@ plt.show()
 plt.plot(x, y, label='Bernabeu Profile from Tp50')
 plt.title('Bernabeu Profile from Tp50')
 plt.show()
-
 
 (x, y) = model.change_CM(3.0)
 
@@ -172,17 +171,17 @@ plt.show()
 
 # 8 - Plota o perfil calibrado de Bernabeu
 model = cal_Bernabeu(
-    CM=4.0,
-    Hs50=1.0,
-    hr = 1.5,
-    D50=0.2,
-    Tp50=8.0,
-    doc=10.0,
-    HTL=-4.0
+    HTL=-2.0, # High tide level (vertical displacement)
+    Hs50=1.0, # Mean significant wave height
+    Tp50=8.0, # Average peak wave period
+    D50=0.4, # Median sediment grain size, in millimeters.
+    doc=10.0, # Beach profile - depth of closure
+    CM=2.5, # depth of start of shoaling zone
+    hr=1.5 # profundidade do ponto de inflexão entre surf e shoaling
 )
 
-(x,y) = model.add_data('Bernabeu_profile.csv')
-#(x,y) = model.add_data('XY_PuertoChiquito_clean.csv')
+#(x,y) = model.add_data('Bernabeu_profile.csv')
+(x,y) = model.add_data('XY_PuertoChiquito_clean.csv')
 
 print(f"Ar = {model.Ar}, B = {model.B}, C = {model.C}, D = {model.D}, CM = {model.CM}, hr = {model.hr}")
 
@@ -191,7 +190,7 @@ all_x = np.concatenate([model.x_obs, x])
 all_y = np.concatenate([model.y_obs, y])
 x_min, x_max = all_x.min(), all_x.max()
 y_bottom    = all_y.max()   # maior profundidade
-y_top       = model.HTL - 2 # um metro acima do HTL
+y_top       = model.HTL - 2 # 2 metros acima do HTL
 
 # 10 - Plota o gráfico comparando o pefil sintético com um medido
 # 10.1. Pinta a água (entre HTL e y_bottom)
@@ -235,11 +234,11 @@ ax.plot(
     x, y,
     '--', linewidth=2,
     color='red',
-    label='Bernabeu Profile', zorder=5
+    label='Bernabeu Profile', zorder=7
 )
 
-ax.plot(model.x1, y, '--', linewidth=2, color='blue', label='Segment 1')
-ax.plot(model.x2, model.y2, '--', linewidth=2, color='green', label='Segment 2')
+ax.plot(model.x1, y, '--', linewidth=2, color='yellow', label='Segment 1', zorder=5)
+ax.plot(model.x2, model.y2, '--', linewidth=2, color='green', label='Segment 2', zorder=6)
 
 # 6.7. formatação final ---
 ax.set_xlim(x_min, x_max)

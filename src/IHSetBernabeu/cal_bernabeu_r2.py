@@ -55,7 +55,10 @@ class cal_Bernabeu(object):
 
         self.x1 = x1
         self.x2 = x2
-        self.y2 = y2
+        #self.y2 = y2
+        mask2 = (self.h - self.CM) >= 0
+        h2_full = self.h[mask2]
+        self.y2 = h2_full + self.HTL
         
         return (x, self.h + self.HTL)  # Return x and y in absolute coordinates (relative to HTL)
 
