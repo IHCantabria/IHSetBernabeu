@@ -28,13 +28,10 @@ def Bernabeu(A, B, C, D, M, h, xo):
         x = x1
     else:
 
-
         intersection_index = intersection_index[0]
         x1_ = x1[:intersection_index]
         x2_ = x2_interp[intersection_index:]
 
         x = np.concatenate((x1_, x2_))
     
-
-
     return x, x1, x2, h_M
