@@ -9,7 +9,7 @@ model = cal_Bernabeu(
     Tp50=8.0, # Average peak wave period
     D50=0.4, # Median sediment grain size, in millimeters.
     doc=10.0, # Beach profile - depth of closure
-    CM=2.5, # depth of start of shoaling zone
+    CM=3.0, # depth of start of shoaling zone
     hr=1.5 # profundidade do ponto de inflexão entre surf e shoaling
 )
 
@@ -176,7 +176,7 @@ model = cal_Bernabeu(
     Tp50=8.0, # Average peak wave period
     D50=0.4, # Median sediment grain size, in millimeters.
     doc=10.0, # Beach profile - depth of closure
-    CM=2.5, # depth of start of shoaling zone
+    CM=3.0, # depth of start of shoaling zone
     hr=1.5 # profundidade do ponto de inflexão entre surf e shoaling
 )
 
