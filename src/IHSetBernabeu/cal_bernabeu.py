@@ -2,7 +2,8 @@ import numpy as np
 import pandas as pd
 from .bernabeu import Bernabeu
 from IHSetUtils import wMOORE
-from scipy.optimize import minimize
+#from scipy.optimize import minimize
+from scipy.optimize import least_squares
 
 
 class cal_Bernabeu(object):
@@ -54,7 +55,10 @@ class cal_Bernabeu(object):
 
         self.x1 = x1
         self.x2 = x2
-        self.y2 = y2
+        #self.y2 = y2
+        mask2 = (self.h - self.CM) >= 0
+        h2_full = self.h[mask2]
+        self.y2 = h2_full + self.HTL
         
         return (x, self.h + self.HTL)  # Return x and y in absolute coordinates (relative to HTL)
 
@@ -183,40 +187,61 @@ class cal_Bernabeu(object):
     
     def calibrate(self):
         """
-        Calibrate the Bernabeu profile with the observed data.
-        Calibrates the parameters A, B, C, D and hr
+        Calibrate A, B, C, D and hr by fitting model to observed data via robust least squares.
         """
         if not self.data:
             raise ValueError("No data loaded. Use add_data() to load data.")
-        
+
+        # interpolate observed x on the model depth grid
         x_obs_interp = np.interp(self.h, self.y_obs_rel, self.x_obs)
-        
-        def func(params):
-            A, B, C, D, hr = np.exp(params)
-            # Ensure parameters are positive
-            # A = np.exp(A)
-            # B = np.exp(B)
-            # C = np.exp(C)
-            # D = np.exp(D)
-            xo = ((hr + self.CM) / A)**(3/2) - (hr / C)**(3/2) + B / (A**(3/2)) * (hr + self.CM)**3 - D / (C**(3/2)) * hr**3
-            x = Bernabeu(A, B, C, D, self.CM, self.h, xo)[0]
-            return np.sum((x - x_obs_interp)**2)
-        
-        initial_guess = [np.log(self.Ar), np.log(self.B), np.log(self.C), np.log(self.D), np.log(self.hr)]
-        result = minimize(func, initial_guess, method='L-BFGS-B')
 
-        A, B, C, D, hr = result.x
-        self.Ar = np.exp(A)
-        self.B = np.exp(B)
-        self.C = np.exp(C)
-        self.D = np.exp(D)
-        self.hr = np.exp(hr)
+        def resid(log_params):
+            # log_params = [logA, logB, logC, logD, hr]
+            A, B, C, D = np.exp(log_params[:4])
+            hr = log_params[4]
+            # compute offset xo
+            xo = ((hr + self.CM) / A)**1.5 \
+               - (hr / C)**1.5 \
+               + B / (A**1.5) * (hr + self.CM)**3 \
+               - D / (C**1.5) * hr**3
 
+            # Zone 1: surf (h <= hr+CM)
+            mask1 = self.h <= (hr + self.CM)
+            h1 = self.h[mask1]
+            x1 = (h1 / A)**1.5 + B / (A**1.5) * h1**3
+
+            # Zone 2: shoaling (h > hr+CM)
+            mask2 = ~mask1
+            h2 = self.h[mask2] - self.CM
+            x2 = (h2 / C)**1.5 + D / (C**1.5) * h2**3 + xo
+
+            # assemble residuals
+            res1 = x1 - x_obs_interp[mask1]
+            res2 = x2 - x_obs_interp[mask2]
+            return np.concatenate([res1, res2])
+
+        # initial guess in log-space and hr
+        x0 = np.array([
+            np.log(self.Ar), np.log(self.B),
+            np.log(self.C), np.log(self.D),
+            self.hr
+        ])
+
+        # bounds for parameters
+        lb = [np.log(1e-3)]*4 + [0.0]
+        ub = [np.log(10.0)]*4 + [self.h.max()]
+
+        # robust least-squares fitting
+        res = least_squares(
+            resid, x0, bounds=(lb, ub),
+            loss='huber', f_scale=0.1,
+            xtol=1e-8, ftol=1e-8, max_nfev=2000
+        )
+
+        # update parameters
+        self.Ar, self.B, self.C, self.D = np.exp(res.x[:4])
+        self.hr = res.x[4]
+
+        # rebuild depth vector and return final profile
         self.def_hvec()
-
         return self.run()
-    
-
-
-        
-

@@ -1,5 +1,4 @@
 import numpy as np
-import numpy as np
 from scipy.interpolate import interp1d
 
 def Bernabeu(A, B, C, D, M, h, xo):
@@ -13,25 +12,28 @@ def Bernabeu(A, B, C, D, M, h, xo):
     if np.any(np.diff(h) < 0):
         h = np.sort(h)
 
-    # Evaluate both segments
-    x1 = (h / A)**(3/2) + B / (A**(3/2)) * h**3 
+    # (1) Calculate the surf zone segment
+    x1 = (h / A)**(3/2) + B/(A**(3/2)) * h**3
+ 
+    # (2) Calculate the shoaling zone segment (only where: h >= CM)
+    h_M = h - M
+    mask2 = h_M >= 0 # Ensure h-M is non-negative for the second segment
+    h2 = h_M[mask2]
+    x2 = (h2 / C)**(3/2) + D/(C**(3/2)) * h2**3 + xo
 
-    h_M = h-M
-    h_M = h_M[h_M >= 0]  # Ensure h-M is non-negative for the second segment
+    # 3) Interpolate x2 back over the entire vector h (not only in the h_M vector)
+    # (for points < M it will use x2_interp <– x2 on the edge, but it will not be used)
+    x2_interp = np.interp(h, h[mask2], x2)
 
-    x2 = ((h_M) / C)**(3/2) + D / C**(3/2) * (h_M)**3 + xo
+    # 4) Always finds the breakpoint by minimizing |x1–x2_interp|
+    diff = np.abs(x1 - x2_interp)
+    i_break = np.argmin(diff)
 
-    # we find the intersection considering they have diferent sizes
-    x2_interp = np.interp(h-M, h_M, x2)
-    intersection_index = np.argwhere(np.isclose(x1, x2_interp, atol=1e-5)).flatten()
-    if intersection_index.size == 0:
-        x = x1
-    else:
+    #5) Assemble the complete profile where xi = hi
+    x = np.empty_like(x1)
+    x[:i_break] = x1[:i_break]
+    x[i_break:] = x2_interp[i_break:]
 
-        intersection_index = intersection_index[0]
-        x1_ = x1[:intersection_index]
-        x2_ = x2_interp[intersection_index:]
+    return x, x1, x2, h2
 
-        x = np.concatenate((x1_, x2_))
-    
-    return x, x1, x2, h_M
+
