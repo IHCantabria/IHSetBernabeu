@@ -1,26 +1,39 @@
 # IHSetBernabeu
+Python package to run and calibrate the Bernabeu et al. (2003) equilibrium beach profile model.
 
-Bernabeu et al. (2003) proposed a two-section equilibrium beach profile model (2S-EBP) based on the concept of the previous studies. This model is useful for predicting the equilibrium beach profile under various conditions.
 
+## :house: Local Installation
+* Using pip:
 
-## Installation and use
+```bash
 
-To install this module use:
-
-```sh
-pip install https://github.com/IHCantabria/IHSetBernabeu/archive/refs/tags/latest.zip
+pip install ...
 ```
 
-Run tests to validate:
-
-```sh
-ihsetbernabeu-tests
-```
+## Run test
+fron IHSetBernabeu/test folder, type:
+python test.py
 
 ## Documentation
-
 Documentation is available at https://ihcantabria.github.io/IHSetBernabeu
 
-## Credits
+## Package structure
+IHSetBernabeu
+|
+├── LICENSE
+├── README.md
+├── src
+    ├── IHSetBernabeu
+       ├── bernabeu.py
+       └── cal_bernabeu.py
+├── test
+    ├── test.py
+    └── XY_PuertoChiquito_clean.csv
+├── setup.py
+└── .gitignore
 
-Developed and maintained by Lim, Changbin @ IHCantabria.
+## :incoming_envelope: Contact us
+:snake: For code-development issues contact :man_technologist: [Lucas de Freitas](https://github.com/defreitasL) @ :office: [IHCantabria](https://github.com/IHCantabria)
+
+## :copyright: Credits
+Developed by :man_technologist: [Lucas de Freitas](https://github.com/defreitasL) @ :office: [IHCantabria](https://github.com/IHCantabria).

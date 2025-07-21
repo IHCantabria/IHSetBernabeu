@@ -1,11 +1,12 @@
-LICENSE
+MANIFEST.in
 README.md
 setup.py
 src/IHSetBernabeu/__init__.py
-src/IHSetBernabeu/bernabeu_r2.py
-src/IHSetBernabeu/cal_bernabeu_r2.py
+src/IHSetBernabeu/bernabeu.py
+src/IHSetBernabeu/cal_bernabeu.py
 src/IHSetBernabeu.egg-info/PKG-INFO
 src/IHSetBernabeu.egg-info/SOURCES.txt
 src/IHSetBernabeu.egg-info/dependency_links.txt
-src/IHSetBernabeu.egg-info/requirement.txt
+src/IHSetBernabeu.egg-info/requires.txt
 src/IHSetBernabeu.egg-info/top_level.txt
+test/test.py
