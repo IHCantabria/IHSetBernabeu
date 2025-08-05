@@ -76,7 +76,7 @@ class cal_Bernabeu(object):
         )
         y2_raw = self.h + self.HTL
 
-        self.x_full = x_raw
+        self.x_full = x_raw + self.x_drift
         self.y_full = self.h + self.HTL
 
         # Surf e Shoalling segments mask
@@ -84,14 +84,14 @@ class cal_Bernabeu(object):
         mask_shoal = ~mask_surf
 
         # segment 1: surf zone (h <= hr + CM)
-        self.x1_full = x1_raw
+        self.x1_full = x1_raw + self.x_drift
         self.y1_full = self.h + self.HTL
         self.x1 = self.x_full[mask_surf]
         self.y1 = self.y_full[mask_surf]
         
         # segment 2: shoaling zone
         #x2_interp    = np.interp(self.h, h2, x2_raw)
-        self.x2_full = x2_raw
+        self.x2_full = x2_raw + self.x_drift
         self.y2_full = h2 + self.CM + self.HTL
         self.x2 = self.x_full[mask_shoal]
         self.y2 = self.y_full[mask_shoal]
