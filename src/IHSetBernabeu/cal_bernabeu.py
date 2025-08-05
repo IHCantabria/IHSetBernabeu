@@ -12,14 +12,35 @@ class cal_Bernabeu(object):
     
     This class reads input datasets, calculates its parameters.
     """
-    def __init__(self, CM, Hs50, D50, Tp50, doc, hr, HTL=0):
-        self.CM = CM
-        self.Hs50 = Hs50
-        self.D50 = D50
-        self.Tp50 = Tp50
-        self.doc = doc
+    def __init__(self, HTL, Hs50, Tp50, D50, CM, hr, doc):
+
+        # --- Input data validation ---
+        gamma_break = CM / Hs50
+        if not (0.5 <= gamma_break <= 1.5):
+            raise ValueError(
+                f"CM should be between 0.7 and 1.5 times Hs50 "
+                f"(CM/Hs50 given = {gamma_break:.2f})"
+            )
+        if not (-17.0 <= HTL <= 17.0):
+            raise ValueError(f"HTL must be between -17 and 17 m (given {HTL})")
+        if not (0.1 <= Hs50 <= 4):
+            raise ValueError(f"Hs50 must be between 0.1 and and be 2x smaller than CM (given {Hs50})")
+        if not (4.0 <= Tp50 <= 20.0):
+            raise ValueError(f"Tp50 must be between 1 and 25 s (given {Tp50})")
+        if not (0.06 <= D50 <= 4.0):
+            raise ValueError(f"D50 must be between 0.06 and 4.0 mm (given {D50})")
+        if not (HTL < doc <= HTL+20.0):
+            raise ValueError(f"doc must be between HTL and CM/2 (given doc={doc}, HTL={HTL} and CM/2={CM/2})")
+        if not (HTL < hr < CM/2):
+            raise ValueError(f"hr must satisfy HTL-0.5 < hr < CM/2 (given hr={hr}, HTL={HTL}, CM/2={CM/2})")
+
         self.HTL = HTL
+        self.Hs50 = Hs50
+        self.Tp50 = Tp50
+        self.D50 = D50
+        self.CM = CM
         self.hr = hr
+        self.doc = doc
 
         # observed data placeholders
         self.x_raw = None
@@ -45,7 +66,8 @@ class cal_Bernabeu(object):
     def params(self):
         ws = wMOORE(self.D50 / 1000)
         gamma = self.Hs50 / (ws * self.Tp50)
-        self.Ar = 0.21 - 0.02 * gamma
+        A_raw = 0.21 - 0.02 * gamma
+        self.A = max(A_raw, 1e-3)
         self.B = 0.89 * np.exp(-1.24 * gamma)
         self.C = 0.06 + 0.04 * gamma
         self.D = 0.22 * np.exp(-0.83 * gamma)
@@ -55,9 +77,9 @@ class cal_Bernabeu(object):
 
     def def_xo(self):
         self.xo = (
-            (self.hr + self.CM) / self.Ar
+            (self.hr + self.CM) / self.A
         )**1.5 - (self.hr / self.C)**1.5 + (
-            self.B / (self.Ar**1.5)
+            self.B / (self.A**1.5)
         ) * (self.hr + self.CM)**3 - (
             self.D / (self.C**1.5)
         ) * self.hr**3
@@ -71,10 +93,10 @@ class cal_Bernabeu(object):
         self.def_xo()
         # raw computation
         x_raw, x1_raw, x2_raw, h2 = Bernabeu(
-            self.Ar, self.B, self.C, self.D,
+            self.A, self.B, self.C, self.D,
             self.CM, self.h, self.xo
         )
-        y2_raw = self.h + self.HTL
+        #y2_raw = self.h + self.HTL
 
         self.x_full = x_raw + self.x_drift
         self.y_full = self.h + self.HTL
@@ -191,12 +213,15 @@ class cal_Bernabeu(object):
             return np.concatenate([res1, res2])
 
         x0 = np.array([
-            np.log(self.Ar), np.log(self.B),
+            np.log(self.A), np.log(self.B),
             np.log(self.C), np.log(self.D),
             self.hr
         ])
-        lb = [np.log(1e-3)]*4 + [0.0]
-        ub = [np.log(10.0)]*4 + [self.h.max()]
+        lb = [np.log(1e-4)]*4 + [0.0]
+        ub = [np.log(100.0)]*4 + [self.h.max()]
+
+        x0 = np.maximum(x0, lb)
+        x0 = np.minimum(x0, ub)
 
         res = least_squares(
             resid, x0, bounds=(lb, ub),
@@ -204,7 +229,7 @@ class cal_Bernabeu(object):
             xtol=1e-8, ftol=1e-8, max_nfev=2000
         )
 
-        self.Ar, self.B, self.C, self.D = np.exp(res.x[:4])
+        self.A, self.B, self.C, self.D = np.exp(res.x[:4])
         self.hr = res.x[4]
         self.def_hvec()
         return self.run()

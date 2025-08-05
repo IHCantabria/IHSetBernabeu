@@ -10,18 +10,18 @@ import numpy as np
 class BernabeuTest:
 
     def __init__(self):
-        self.HTL  = -0.25 # High tide level (vertical displacement)
-        self.Hs50 = 1.0 # Mean significant wave height
-        self.Tp50 = 8.0 # Average peak wave period
-        self.D50  = 0.4 # Median sediment grain size, in millimeters.
-        self.doc  = 2.75 # Beach profile - depth of closure
-        self.CM   = 2.0 # depth of start of shoaling zone
-        self.hr   = 1.0 # depth of the inflection point between surf and shoaling
+        self.HTL  = -5 # High tide level (vertical displacement)
+        self.Hs50 = 4.0 # Mean significant wave height
+        self.Tp50 = 16.0 # Average peak wave period
+        self.D50  = 0.5 # Median sediment grain size, in millimeters.
+        self.CM   = 6.0 # depth of start of shoaling zone
+        self.hr   = 2.0 # depth of the inflection point between surf and shoaling
+        self.doc  = 15.0 # Beach profile - depth of closure
         self.csv  = "XY_PuertoChiquito_clean.csv"
 
         # 1. Instantiate model
-        self.model = cal_Bernabeu(self.CM, self.Hs50, self.D50, self.Tp50,
-                            self.doc, self.hr, self.HTL)
+        self.model = cal_Bernabeu(self.HTL, self.Hs50, self.Tp50, self.D50,
+                             self.CM, self.hr, self.doc)
 
     def plot(self):
         # 2 - Generates theoretical profile without calibration from D50
@@ -173,11 +173,11 @@ class BernabeuTest:
             self.y_obs = -self.y_obs
 
         # 8.1. Alternative noise profile
-        #(self.x_cal, self.y_cal) = self.model.add_data('Bernabeu_profile.csv')
-        (x_cal, y_cal) = self.model.add_data(self.csv)
+        (x_cal, y_cal) = self.model.add_data('Bernabeu_profile.csv')
+        #(x_cal, y_cal) = self.model.add_data(self.csv)
 
         # 8.2. Print the Bernabeu calibration values
-        print(f"Ar = {self.model.Ar}, B = {self.model.B}, C = {self.model.C}, D = {self.model.D}, CM = {self.model.CM}, hr = {self.model.hr}")
+        print(f"Ar = {self.model.A}, B = {self.model.B}, C = {self.model.C}, D = {self.model.D}, CM = {self.model.CM}, hr = {self.model.hr}")
 
         # 8.3. Fill waterline (between HTL e y_bottom)
         fig, ax     = plt.subplots(figsize=(8,5))
@@ -231,8 +231,8 @@ class BernabeuTest:
         )
 
         # 8.9. Segments lines
-        #ax.plot(self.model.x1_full, self.model.y1_full, ':', color='yellow', lw=1.8, label='Surf zone',   zorder=5)
-        #ax.plot(self.model.x2_full, self.model.y2_full, ':', color='green',  lw=1.8, label='Shoaling zone',zorder=6)
+        ax.plot(self.model.x1_full, self.model.y1_full, ':', color='yellow', lw=1.8, label='Surf zone',   zorder=5)
+        ax.plot(self.model.x2_full, self.model.y2_full, ':', color='green',  lw=1.8, label='Shoaling zone',zorder=6)
 
         # 8.10. Final adjustments ---
         ax.set_xlim(x_cal_min, x_cal_max)

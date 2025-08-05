@@ -28,12 +28,10 @@ def Bernabeu(A, B, C, D, M, h, xo):
     # 4) Always finds the breakpoint by minimizing |x1–x2_interp|
     diff = np.abs(x1 - x2_interp)
     i_break = np.argmin(diff)
-
+    
     #5) Assemble the complete profile where xi = hi
     x = np.empty_like(x1)
     x[:i_break] = x1[:i_break]
     x[i_break:] = x2_interp[i_break:]
 
     return x, x1, x2, h2
-
-
