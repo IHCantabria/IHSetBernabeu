@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.interpolate import interp1d
 
-def Bernabeu(A, B, C, D, M, h, xo):
+def bernabeu_mod(A, B, C, D, M, h, xo):
     """
     Bernabeu beach profile composed of two expressions depending on depth h.
     The profile is split at the intersection of both expressions.

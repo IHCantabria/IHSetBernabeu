@@ -9,4 +9,3 @@ src/IHSetBernabeu.egg-info/SOURCES.txt
 src/IHSetBernabeu.egg-info/dependency_links.txt
 src/IHSetBernabeu.egg-info/requires.txt
 src/IHSetBernabeu.egg-info/top_level.txt
-test/test.py
